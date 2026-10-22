@@ -83,7 +83,7 @@ object PlanGeneratorAlgorithm {
 
         val parsedTopics = parseUserTopics(rawTopicsText)
         val baseMinutes = (dailyMinutesPreference * difficulty.factor).toInt()
-        val dateFormat = SimpleDateFormat("EEEE, d בMMMM", Locale("he", "IL"))
+        val dateFormat = SimpleDateFormat("EEEE, d בMMMM", Locale.forLanguageTag("he-IL"))
 
         val planList = mutableListOf<DailyPlanItem>()
 

@@ -34,7 +34,33 @@ jobs:
             chmod +x ./gradlew
           fi
 
+      - name: Configure Keystore for Release Signing
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASS: ${{ secrets.STORE_PASSWORD || 'android' }}
+          ALIAS_PASS: ${{ secrets.KEY_PASSWORD || 'android' }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "Decoding KEYSTORE_BASE64 from GitHub Secrets..."
+            echo "$KEYSTORE_BASE64" | base64 --decode > my-upload-key.jks
+          elif [ ! -f "my-upload-key.jks" ]; then
+            echo "No existing keystore found, generating upload keystore for CI build..."
+            keytool -genkeypair -v \
+              -keystore my-upload-key.jks \
+              -alias upload \
+              -keyalg RSA \
+              -keysize 2048 \
+              -validity 10000 \
+              -storepass "$KEYSTORE_PASS" \
+              -keypass "$ALIAS_PASS" \
+              -dname "CN=lomedAi, OU=Release, O=lomedAi, L=TelAviv, S=Israel, C=IL"
+          fi
+
       - name: Build Release APK
+        env:
+          KEYSTORE_PATH: ${{ github.workspace }}/my-upload-key.jks
+          STORE_PASSWORD: ${{ secrets.STORE_PASSWORD || 'android' }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD || 'android' }}
         run: |
           if [ -f "./gradlew" ]; then
             ./gradlew assembleRelease --stacktrace
@@ -54,13 +80,13 @@ jobs:
           fi
           echo "Found APK at: $APK_PATH"
           mkdir -p output_artifacts
-          cp "$APK_PATH" output_artifacts/StudyPlanner-release.apk
+          cp "$APK_PATH" output_artifacts/lomedAi-release.apk
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: StudyPlanner-APK
-          path: output_artifacts/StudyPlanner-release.apk
+          name: lomedAi-APK
+          path: output_artifacts/lomedAi-release.apk
           retention-days: 7
 
   release:
@@ -76,7 +102,7 @@ jobs:
       - name: Download APK Artifact
         uses: actions/download-artifact@v4
         with:
-          name: StudyPlanner-APK
+          name: lomedAi-APK
           path: release_artifacts
 
       - name: Generate Release Tag & Name
@@ -88,7 +114,7 @@ jobs:
             TAG_NAME="v1.0.$(date +'%Y%m%d%H%M%S')"
           fi
           echo "tag_name=$TAG_NAME" >> "$GITHUB_OUTPUT"
-          echo "release_title=StudyPlanner $TAG_NAME" >> "$GITHUB_OUTPUT"
+          echo "release_title=lomedAi $TAG_NAME" >> "$GITHUB_OUTPUT"
 
       - name: Publish to GitHub Releases
         uses: softprops/action-gh-release@v2
@@ -97,16 +123,17 @@ jobs:
           name: ${{ steps.release_info.outputs.release_title }}
           draft: false
           prerelease: false
-          files: release_artifacts/StudyPlanner-release.apk
+          files: release_artifacts/lomedAi-release.apk
           body: |
-            ### 🚀 StudyPlanner - שחרור גרסה חדשה
+            ### 🚀 lomedAi - שחרור גרסה חדשה
             
             אפליקציית ניהול למידה חכמה למבחנים ובניית תוכניות לימוד מותאמות אישית בעברית מלאה.
             
             **מה חדש בגרסה זו:**
-            - 🎯 מנוע התאמת שיטות למידה חכם (שיטת 1-2-3, תרגול ספירלי, Active Recall, ציר זמן נרטיבי)
+            - 🎯 בחירת שיטת למידה חופשית (שיטת 1-2-3, תרגול ספירלי, Active Recall, טכניקת פיינמן, פומודורו ממוקד)
+            - 📚 הגדרת נושאי לימוד ופרקים ספציפיים וחלוקתם החכמה על פני ימי הלימוד
             - ⏱️ טיימר למידה מובנה (Pomodoro & Deep Focus)
-            - 📊 דשבורד מעקב התקדמות וספירה לאחור למבחנים
+            - 📊 דשבורד מעקב התקדמות וספירה לאחור למבחנים ללא נתוני דמה
             - 💜 עיצוב Dark Mode יוקרתי (Neon Violet Glassmorphism)
             - 🇮🇱 תמיכה מלאה ב-RTL ועברית שפת אם
             

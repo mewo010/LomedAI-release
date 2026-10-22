@@ -26,11 +26,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.FormatListBulleted
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.FormatListBulleted
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.School
@@ -110,7 +110,7 @@ fun NewExamWizardSheet(
     )
 
     val quickDayOffsets = listOf(3, 5, 7, 10, 14)
-    val dateFormat = remember { SimpleDateFormat("EEEE, d בMMMM yyyy", Locale("he", "IL")) }
+    val dateFormat = remember { SimpleDateFormat("EEEE, d בMMMM yyyy", Locale.forLanguageTag("he-IL")) }
 
     // Number of parsed topics
     val parsedTopics = remember(topicsText) {
@@ -259,7 +259,7 @@ fun NewExamWizardSheet(
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
-                        imageVector = Icons.Default.FormatListBulleted,
+                        imageVector = Icons.AutoMirrored.Filled.FormatListBulleted,
                         contentDescription = null,
                         tint = NeonVioletPrimary,
                         modifier = Modifier.size(18.dp)
